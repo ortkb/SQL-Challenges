@@ -1,0 +1,32 @@
+-- Find who attended SQL Symphony Concert 3 times in December
+WITH ConcertAttendanceCTE AS (
+    SELECT
+        person_id,
+        event_name,
+        COUNT(*) AS ConcertAttendanceCount
+        FROM facebook_event_checkin
+        WHERE 
+        event_name = "SQL Symphony Concert" AND
+        date BETWEEN 20171201 AND 20171231
+        GROUP BY 
+        person_id
+        HAVING COUNT(*) >= 3
+)
+
+SELECT name, 
+event_name,
+ConcertAttendanceCount,
+hair_color,
+height,
+car_make,
+annual_income
+FROM person
+INNER JOIN ConcertAttendanceCTE ON person.id = ConcertAttendanceCTE.person_id
+INNER JOIN drivers_license ON person.license_id = drivers_license.id
+LEFT JOIN income ON person.ssn = income.ssn
+WHERE 
+height BETWEEN 65 AND 67 AND
+hair_color = "red" AND
+car_make LIKE "Tesla%" AND
+annual_income > (SELECT AVG(annual_income) FROM income) 
+;

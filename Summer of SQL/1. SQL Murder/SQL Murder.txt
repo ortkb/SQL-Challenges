@@ -1,0 +1,73 @@
+Jan 15th Murder SQL City
+
+SELECT date,
+       type,
+       description,
+       city
+FROM crime_scene_report WHERE city = "SQL City" AND type = "murder" AND date = 20180115;
+
+// Result
+Security footage shows that there were 2 witnesses. The first witness lives at the last house on "Northwestern Dr". The second witness, named Annabel, lives somewhere on "Franklin Ave".
+
+// Find witness 1
+SELECT id,
+       name,
+       license_id,
+       MAX(address_number),
+       address_street_name,
+       ssn
+FROM person
+WHERE address_street_name = "Northwestern Dr"
+;
+
+
+ - Result:  id      name            license id      address_number      Address street name     SSN
+            14887	Morty Schapiro	118009	        4919            	Northwestern Dr     	111564949
+
+
+// Find witness 2
+
+SELECT id,
+       name,
+       license_id,
+       address_number,
+       address_street_name,
+       ssn
+FROM person
+WHERE address_street_name = "Franklin Ave" AND name LIKE "Annabel%"
+;
+
+
+ - Result:  id      name            license id      address_number      Address street name     SSN
+            16371	Annabel Miller	490173	        103             	Franklin Ave	        318771143
+
+
+// Interviews (witness interviews)
+
+SELECT * FROM interview 
+WHERE person_id = "14887" OR person_id = "16371"
+;
+- Result:   ID          Transcript
+            14887	    I heard a gunshot and then saw a man run out. He had a "Get Fit Now Gym" bag. The membership number on the bag started with "48Z". Only gold members have those bags. The man got into a car with a plate that included "H42W".
+            16371       I saw the murder happen, and I recognized the killer from my gym when I was working out last week on January the 9th.
+
+// Look through Gym, Person and Drivers License records to find killer
+
+-- Get killer name & id from gym membership + checkin times + drivers license
+SELECT person.name, person.id FROM person 
+  INNER JOIN get_fit_now_member AS member
+  ON person.id = member.person_id
+  INNER JOIN get_fit_now_check_in AS checkin
+  ON member.id = checkin.membership_id
+  INNER JOIN drivers_license 
+  ON person.license_id = drivers_license.id
+  
+  WHERE membership_id LIKE "48Z%" AND plate_number LIKE "%H42W%" AND check_in_date = 20180109
+;
+
+- Result:   name                id
+            "Jeremy Bowers"     67318
+
+
+// Query Jeremy Bowers' Interview
+
