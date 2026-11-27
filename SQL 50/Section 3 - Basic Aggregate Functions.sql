@@ -105,10 +105,62 @@ select
             end 
     ) as approved_total_amount
 from transactions
-group by month, country
+group by month, country;
 
 #1174. Immediate Food Delivery II
 
+with earliest_dates as(
+    select 
+        min(order_date) as m_orderdate
+        ,min(customer_pref_delivery_date) as m_prefdate
+    from delivery
+    group by customer_id
+)
+
+select
+    (count(m_orderdate)/(select count(*) from earliest_dates))*100 as immediate_percentage
+from 
+    earliest_dates
+where
+    m_orderdate = m_prefdate;	
+
 #550. Game Play Analysis IV
+
+with nextdays as (
+    select 
+        player_id
+        ,event_date
+        ,date_add(event_date, interval 1 day) as tomorrow
+        ,LEAD(event_date) OVER (partition by player_id order by event_date asc) as next_event_date
+    from activity
+)
+
+select 
+    round(
+        count(
+            case 
+                when
+                    tomorrow = next_event_date
+                then 
+                    player_id
+                else 
+                    null
+            end
+        ) 
+        / 
+        (select count(distinct player_id) from nextdays) 
+    , 2)
+    as fraction
+from nextdays
+where 
+    (player_id, event_date) 
+in
+    (
+        select
+            player_id
+            ,min(event_date) as event_date
+        from activity
+        group by player_id
+    );
 
 

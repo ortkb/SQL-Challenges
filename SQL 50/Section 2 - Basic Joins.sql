@@ -81,6 +81,19 @@ order by
 
 #570. Managers with at Least 5 Direct Reports
 
+select 
+    e2.name
+from
+    employee e
+inner join 
+    employee e2
+on
+    e.managerID = e2.id
+group by 
+    e.managerId
+having     
+    count(e.managerId) >= 5;
+
 #1934. Confirmation Rate
 
 with confirmed as 
